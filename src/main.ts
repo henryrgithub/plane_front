@@ -1,4 +1,5 @@
 import './style.css'
+import { vis } from './vis'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -9,3 +10,5 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <h1>Little Plane</h1>
   </div>
 `
+let blah = new vis();
+document.body.appendChild(blah.renderer.domElement);
