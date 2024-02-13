@@ -1,5 +1,5 @@
-import './style.css'
-import { vis } from './vis'
+import './style.css';
+import * as sim from './sim';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -7,8 +7,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </a>
     <a href="https://www.typescriptlang.org/" target="_blank">
     </a>
-    <h1>Little Plane</h1>
+    <!--<h1>Little Plane</h1>-->
   </div>
-`
-let blah = new vis();
-document.body.appendChild(blah.renderer.domElement);
+`;
+const localsim = new sim.sim();
+document.body.appendChild(localsim.thisvis.renderer.domElement);
