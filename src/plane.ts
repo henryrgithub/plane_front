@@ -12,9 +12,8 @@ export class Plane {
 
   //flightTensor: [[number]];
   constructor() {
-    /*this.flightTensor = [
-
-    ]*/
+    //this.flightTensor = [
+    //]
     this.wingspan = 0.9;
     this.length = 0.6;
     this.chord = 0.08;
