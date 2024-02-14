@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import * as plane from './plane';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
 class vis {
   renderer: THREE.WebGLRenderer;
@@ -7,6 +8,7 @@ class vis {
   camera: THREE.PerspectiveCamera;
   mesh: THREE.Mesh;
   aircraft: THREE.Group;
+  camcontrols: OrbitControls;
 
   constructor() {
     const width = window.innerWidth,
@@ -21,13 +23,14 @@ class vis {
     const material = new THREE.MeshNormalMaterial();
 
     this.mesh = new THREE.Mesh(geometry, material);
-    //this.scene.add(this.mesh);
 
     this.aircraft = new THREE.Group();
     this.aircraft.name = 'aircraft';
     this.scene.add(this.aircraft);
 
     this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.camcontrols = new OrbitControls(this.camera, this.renderer.domElement);
+    this.camcontrols.update();
     this.renderer.setSize(width, height);
     this.renderer.setAnimationLoop(this.animation);
   }
@@ -37,7 +40,6 @@ class vis {
     this.renderer.render(this.scene, this.camera);
   };
   addAircraft(planein: plane.Plane) {
-    //setTimeout(this.aircraft.add, 20, planein.model);
     this.aircraft.add(planein.model);
   }
 }

@@ -29,14 +29,15 @@ class Plane {
       50,
       16
     );
-    const mat = new THREE.MeshStandardMaterial();
+    const mat = new THREE.MeshNormalMaterial();
     const boxmesh = new THREE.Mesh(boxgeo, mat);
     const conemesh = new THREE.Mesh(conegeo, mat);
-    boxmesh.updateMatrix();
-    conemesh.updateMatrix();
+    //boxmesh.updateMatrix();
+    //conemesh.updateMatrix();
     this.model = new THREE.Group();
     this.model.add(boxmesh);
     this.model.add(conemesh);
+    //this.model.updateMatrix();
   }
 }
 
