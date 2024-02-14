@@ -10,5 +10,5 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <!--<h1>Little Plane</h1>-->
   </div>
 `;
-const localsim = new sim.sim();
-document.body.appendChild(localsim.thisvis.renderer.domElement);
+const localSim = new sim.Sim(); //please excuse the global const for now
+document.body.appendChild(localSim.thisVis.renderer.domElement);

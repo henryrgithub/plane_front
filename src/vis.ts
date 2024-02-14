@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import * as plane from './plane';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
-export class vis {
+export class Vis {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   aircraft: THREE.Group;
-  camcontrols: OrbitControls;
+  camControls: OrbitControls;
 
   constructor() {
     const width = window.innerWidth,
@@ -23,8 +23,8 @@ export class vis {
     this.scene.add(this.aircraft);
 
     this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.camcontrols = new OrbitControls(this.camera, this.renderer.domElement);
-    this.camcontrols.update();
+    this.camControls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.camControls.update();
     this.renderer.setSize(width, height);
     this.renderer.setAnimationLoop(this.animation);
   }

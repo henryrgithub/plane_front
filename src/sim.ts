@@ -1,13 +1,13 @@
-import * as vis from './vis';
-import * as plane from './plane';
+import * as Vis from './vis';
+import * as Plane from './plane';
 
-export class sim {
-  thisvis: vis.vis;
-  mainplane: plane.Plane;
+export class Sim {
+  thisVis: Vis.Vis;
+  mainPlane: plane.Plane;
 
   constructor() {
-    this.thisvis = new vis.vis();
-    this.mainplane = new plane.Plane();
-    this.thisvis.addAircraft(this.mainplane);
+    this.thisVis = new Vis.Vis();
+    this.mainPlane = new Plane.Plane();
+    this.thisVis.addAircraft(this.mainPlane);
   }
 }
