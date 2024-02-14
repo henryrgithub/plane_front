@@ -6,7 +6,6 @@ export class vis {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
-  mesh: THREE.Mesh;
   aircraft: THREE.Group;
   camcontrols: OrbitControls;
 
@@ -19,11 +18,6 @@ export class vis {
 
     this.scene = new THREE.Scene();
 
-    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-    const material = new THREE.MeshNormalMaterial();
-
-    this.mesh = new THREE.Mesh(geometry, material);
-
     this.aircraft = new THREE.Group();
     this.aircraft.name = 'aircraft';
     this.scene.add(this.aircraft);
@@ -35,8 +29,7 @@ export class vis {
     this.renderer.setAnimationLoop(this.animation);
   }
   animation = (time: DOMHighResTimeStamp) => {
-    this.mesh.rotation.x = time / 2000;
-    this.mesh.rotation.y = time / 1000;
+    // time is dead for now but will be used for physics sim
     this.renderer.render(this.scene, this.camera);
   };
   addAircraft(planein: plane.Plane) {
