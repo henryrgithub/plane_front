@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as plane from './plane';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
-class vis {
+export class vis {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
@@ -43,4 +43,3 @@ class vis {
     this.aircraft.add(planein.model);
   }
 }
-export {vis};

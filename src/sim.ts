@@ -1,7 +1,7 @@
 import * as vis from './vis';
 import * as plane from './plane';
 
-class sim {
+export class sim {
   thisvis: vis.vis;
   mainplane: plane.Plane;
 
@@ -11,5 +11,3 @@ class sim {
     this.thisvis.addAircraft(this.mainplane);
   }
 }
-
-export {sim};

@@ -4,7 +4,7 @@
 import * as mathjs from 'mathjs';
 import * as THREE from 'three';
 
-class Plane {
+export class Plane {
   wingspan: number;
   length: number;
   chord: number;
@@ -37,5 +37,3 @@ class Plane {
     this.model.add(conemesh);
   }
 }
-
-export {Plane};
