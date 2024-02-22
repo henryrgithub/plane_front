@@ -1,7 +1,13 @@
 // todo:
-// - pitch ctrl derivs
+// - Create pitch control derivatives
+// -- This will allow plane-specific physics calculations
+// -- Implement these derivatives as a tensor to allow sensible matrix mult
+// -- Use mathjs for matrix mult implementation
+// - Create geometry more dynamically
+// -- Import structure that represents shape of plane, conver to group of extrudeGeometries
+// -- Have default geometry
+// -- Remove boxMesh and coneMesh
 
-import * as mathjs from 'mathjs';
 import * as THREE from 'three';
 
 export class Plane {
@@ -10,29 +16,25 @@ export class Plane {
   chord: number;
   model: THREE.Group;
 
-  //flightTensor: [[number]];
-  constructor() {
-    //this.flightTensor = [
-    //]
-    this.wingspan = 0.9;
-    this.length = 0.6;
-    this.chord = 0.08;
-    const boxGeo = new THREE.BoxGeometry(
-      this.wingspan,
-      this.length,
-      this.length * this.chord
-    );
-    const coneGeo = new THREE.ConeGeometry(
-      this.wingspan * 0.1,
-      this.chord * 1.1,
-      50,
-      16
-    );
+  constructor(wingspan: number, length: number, chord: number) {
+    this.wingspan = wingspan;
+    this.length = length;
+    this.chord = chord;
+    this.model = this.genStandinGeometry(wingspan, length, chord);
+  }
+  genStandinGeometry(
+    wingspan: number,
+    length: number,
+    chord: number
+  ): THREE.Group {
+    const boxGeo = new THREE.BoxGeometry(wingspan, length, length * chord);
+    const coneGeo = new THREE.ConeGeometry(wingspan * 0.1, chord * 1.1, 50, 1);
     const mat = new THREE.MeshNormalMaterial();
     const boxMesh = new THREE.Mesh(boxGeo, mat);
     const coneMesh = new THREE.Mesh(coneGeo, mat);
-    this.model = new THREE.Group();
-    this.model.add(boxMesh);
-    this.model.add(coneMesh);
+    const model = new THREE.Group();
+    model.add(boxMesh);
+    model.add(coneMesh);
+    return model;
   }
 }
