@@ -28,14 +28,12 @@ export class Plane {
     length: number,
     chord: number
   ): THREE.Group {
-    const boxGeo = new THREE.BoxGeometry(wingspan, length, length * chord);
-    const coneGeo = new THREE.ConeGeometry(wingspan * 0.1, chord * 1.1, 50, 1);
-    const mat = new THREE.MeshNormalMaterial();
-    const boxMesh = new THREE.Mesh(boxGeo, mat);
-    const coneMesh = new THREE.Mesh(coneGeo, mat);
     const model = new THREE.Group();
-    model.add(boxMesh);
-    model.add(coneMesh);
+    const mat = new THREE.MeshNormalMaterial();
+    const boxGeo = new THREE.BoxGeometry(wingspan, length, length * chord);
+    model.add(new THREE.Mesh(boxGeo, mat));
+    const coneGeo = new THREE.ConeGeometry(wingspan * 0.1, chord * 1.1, 50, 1);
+    model.add(new THREE.Mesh(coneGeo, mat));
     return model;
   }
 }
