@@ -53,6 +53,7 @@ export class Vis {
       this.resize(element);
     };
   }
+
   resize(element: Element) {
     const width = element.clientWidth;
     const height = element.clientHeight;

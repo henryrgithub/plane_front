@@ -22,6 +22,7 @@ export class Plane {
     this.chord = chord;
     this.model = this.genStandinGeometry(wingspan, length, chord);
   }
+
   genStandinGeometry(
     wingspan: number,
     length: number,
