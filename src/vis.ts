@@ -46,14 +46,14 @@ export class Vis {
     this.aircraftModels.add(plane.model);
   }
 
-  attachTo(element: HTMLElement) {
+  attachTo(element: Element) {
     element.appendChild(this.renderer.domElement);
     this.resize(element);
     window.onresize = () => {
       this.resize(element);
     };
   }
-  resize(element: HTMLElement) {
+  resize(element: Element) {
     const width = element.clientWidth;
     const height = element.clientHeight;
     this.renderer.setSize(width, height);

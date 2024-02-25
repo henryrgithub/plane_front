@@ -11,7 +11,7 @@ export class Sim {
     this.thisVis.addaircraftModels(this.mainPlane);
   }
 
-  attachTo(element: HTMLElement) {
+  attachTo(element: Element) {
     this.thisVis.attachTo(element);
   }
 }
