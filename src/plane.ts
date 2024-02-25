@@ -11,6 +11,7 @@
 import * as THREE from 'three';
 
 export class Plane {
+  private static readonly MATERIAL = new THREE.MeshNormalMaterial();
   wingspan: number;
   length: number;
   chord: number;
@@ -29,11 +30,10 @@ export class Plane {
     chord: number
   ): THREE.Group {
     const model = new THREE.Group();
-    const mat = new THREE.MeshNormalMaterial();
     const boxGeo = new THREE.BoxGeometry(wingspan, length, length * chord);
-    model.add(new THREE.Mesh(boxGeo, mat));
+    model.add(new THREE.Mesh(boxGeo, Plane.MATERIAL));
     const coneGeo = new THREE.ConeGeometry(wingspan * 0.1, chord * 1.1, 50, 1);
-    model.add(new THREE.Mesh(coneGeo, mat));
+    model.add(new THREE.Mesh(coneGeo, Plane.MATERIAL));
     return model;
   }
 }

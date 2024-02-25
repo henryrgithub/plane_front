@@ -42,7 +42,7 @@ export class Vis {
     this.renderer.render(this.scene, this.camera);
   }
 
-  addaircraftModels(plane: Plane) {
+  addAircraftModels(plane: Plane) {
     this.aircraftModels.add(plane.model);
   }
 

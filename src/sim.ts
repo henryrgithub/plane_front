@@ -2,16 +2,16 @@ import {Vis} from './vis';
 import {Plane} from './plane';
 
 export class Sim {
-  thisVis: Vis;
+  vis: Vis;
   mainPlane: Plane;
 
   constructor() {
-    this.thisVis = new Vis();
+    this.vis = new Vis();
     this.mainPlane = new Plane(1.1, 0.4, 0.1);
-    this.thisVis.addaircraftModels(this.mainPlane);
+    this.vis.addAircraftModels(this.mainPlane);
   }
 
   attachTo(element: Element) {
-    this.thisVis.attachTo(element);
+    this.vis.attachTo(element);
   }
 }
