@@ -2,8 +2,8 @@ import {Vis} from './vis';
 import {Plane} from './plane';
 
 export class Sim {
-  vis: Vis;
-  mainPlane: Plane;
+  private vis: Vis;
+  private mainPlane: Plane;
 
   constructor() {
     this.vis = new Vis();

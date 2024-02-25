@@ -12,10 +12,10 @@ import * as THREE from 'three';
 
 export class Plane {
   private static readonly MATERIAL = new THREE.MeshNormalMaterial();
-  wingspan: number;
-  length: number;
-  chord: number;
-  model: THREE.Group;
+  private wingspan: number;
+  private length: number;
+  private chord: number;
+  private model: THREE.Group;
 
   constructor(wingspan: number, length: number, chord: number) {
     this.wingspan = wingspan;

@@ -3,15 +3,15 @@ import {Plane} from './plane';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
 export class Vis {
-  renderer: THREE.WebGLRenderer;
-  scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
-  aircraftModels: THREE.Group;
-  camControls: OrbitControls;
-  static readonly camFov = 70;
-  static readonly camAspectDefault = 1; //should be overwritten on attach or resize
-  static readonly camNearFrustum = 0.01;
-  static readonly camFarFrustum = 10;
+  private renderer: THREE.WebGLRenderer;
+  private scene: THREE.Scene;
+  private camera: THREE.PerspectiveCamera;
+  private aircraftModels: THREE.Group;
+  private camControls: OrbitControls;
+  private static readonly camFov = 70;
+  private static readonly camAspectDefault = 1; //should be overwritten on attach or resize
+  private static readonly camNearFrustum = 0.01;
+  private static readonly camFarFrustum = 10;
 
   constructor() {
     this.camera = new THREE.PerspectiveCamera(
