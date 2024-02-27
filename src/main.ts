@@ -1,11 +1,11 @@
-import './style.css'
+import './style.css';
+import {Sim} from './sim';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-    </a>
-    <h1>Little Plane</h1>
+  <div class="renderWindow">
   </div>
-`
+`;
+const localSim = new Sim();
+const renderWindow = document.querySelector('.renderWindow');
+
+if (renderWindow != null) localSim.attachTo(renderWindow);
