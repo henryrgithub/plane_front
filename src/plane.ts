@@ -10,9 +10,7 @@
 
 import * as THREE from 'three';
 import {option} from 'fp-ts';
-import data from './default-plane.json';
-
-//const specs = require('./default-plane.json');
+import * as defaultPlane from './default-plane.json';
 
 interface basicGeometry {
   wingspan: number;
@@ -73,20 +71,29 @@ function genBasicPlane(): planeSpecs {
 
 export class Plane {
   private static readonly MATERIAL = new THREE.MeshNormalMaterial();
-  private wingspan: number;
-  private length: number;
-  private chord: number;
+  private static readonly defaultWingspan = 1.1;
+  private static readonly defaultLength = 0.4;
+  private static readonly defaultChord = 0.1;
   model: THREE.Group;
   private planeSpecs: planeSpecs;
 
-  constructor(wingspan: number, length: number, chord: number) {
-    this.wingspan = wingspan;
-    this.length = length;
-    this.chord = chord;
-    this.model = this.genStandinGeometry(wingspan, length, chord);
+  constructor() {
     this.planeSpecs = option.getOrElse(() => genBasicPlane())(
-      this.importPlane(JSON.stringify(data))
+      this.importPlane(JSON.stringify(defaultPlane))
     );
+    if (this.planeSpecs.basicGeometry) {
+      this.model = this.genStandinGeometry(
+        this.planeSpecs.basicGeometry?.wingspan,
+        this.planeSpecs.basicGeometry?.length,
+        this.planeSpecs.basicGeometry?.chord
+      );
+    } else {
+      this.model = this.genStandinGeometry(
+        Plane.defaultWingspan,
+        Plane.defaultLength,
+        Plane.defaultChord
+      );
+    }
   }
 
   importPlane(specsJson: string): option.Option<planeSpecs> {

@@ -7,7 +7,7 @@ export class Sim {
 
   constructor() {
     this.vis = new Vis();
-    this.mainPlane = new Plane(1.1, 0.4, 0.1);
+    this.mainPlane = new Plane();
     this.vis.addAircraftModels(this.mainPlane);
   }
 
