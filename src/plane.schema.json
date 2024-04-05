@@ -12,6 +12,7 @@
       "type": "string",
       "description": "DateTime last modified"
     },
+    "planeGeometry":{
     "oneOf": [
       {
       "basicGeometry": {
@@ -23,7 +24,8 @@
         }
       }
       }
-    ],
+    ]
+    },
     "controlLoops": {
       "type": "array",
       "items": {
