@@ -11,59 +11,62 @@
 import * as THREE from 'three';
 import {option} from 'fp-ts';
 import * as defaultPlane from './default-plane.json';
-import {Validator, validate} from 'jsonschema';
-import * as planeSchema from './example.schema.json';
+import {validate} from 'jsonschema';
+import {FromSchema} from 'json-schema-to-ts';
 //import * as planeSchema from './plane.schema.json';
 
-interface basicGeometry {
-  wingspan: number;
-  length: number;
-  chord: number;
-}
+const planeSchema = {
+  type: 'object',
+  properties: {
+    created: {
+      type: 'string',
+      description: 'DateTime first created',
+    },
+    updated: {
+      type: 'string',
+      description: 'DateTime last modified',
+    },
+    planeGeometry: {
+      oneOf: [
+        {
+          basicGeometry: {
+            type: 'object',
+            properties: {
+              wingspanMeters: 'number',
+              lengthMeters: 'number',
+              chordMeters: 'number',
+            },
+          },
+        },
+      ],
+    },
+    controlLoops: {
+      type: 'array',
+      items: {
+        frequencyHz: 'integer',
+        interrupts: {
+          anyOf: [{pitch: 'bool'}, {yaw: 'bool'}, {roll: 'bool'}],
+        },
+      },
+    },
+  },
+} as const;
 
-enum toControls {
-  pitch,
-  yaw,
-  roll,
-}
+type PlaneSpecs = FromSchema<typeof planeSchema>;
 
-interface controlLoop {
-  frequency: number;
-  interrupts: Array<toControls>;
-}
-interface polyhedronInputs {
-  vertices: Array<number>;
-  indices: Array<number>;
-  radius: number;
-  detailDivisor: number;
-}
-
-interface planeSpecs {
-  apiVersion: number;
-  id: number;
-  author: string;
-  created: string;
-  updated: string;
-  vertexGeometry?: polyhedronInputs;
-  basicGeometry?: basicGeometry;
-  controlLoops: Array<controlLoop>;
-}
-function genBasicPlane(): planeSpecs {
+function genBasicPlane(): PlaneSpecs {
   const basicGeometry = {
     wingspan: 1.1,
     length: 0.4,
     chord: 0.1,
   };
-  const interrupts = [toControls.yaw, toControls.pitch, toControls.roll];
+  const interrupts = ['yaw', 'pitch', 'roll'];
   const controlLoop = {
     frequency: 600,
     interrupts: interrupts,
   };
   const controlLoops = [controlLoop];
   const plane = {
-    apiVersion: 0.1,
-    id: 0,
-    author: 'default',
     created: '2024-02-27T05:27:00.000Z',
     updated: '2024-02-27T05:27:00.000Z',
     basicGeometry: basicGeometry,
@@ -78,10 +81,11 @@ export class Plane {
   private static readonly defaultLength = 0.4;
   private static readonly defaultChord = 0.1;
   model: THREE.Group;
-  private planeSpecs: planeSpecs;
+  private planeSpecs: PlaneSpecs;
 
   constructor() {
-    this.planeSpecs = this.importPlane(JSON.stringify(defaultPlane));
+    this.planeSpecs = this.importPlane(defaultPlane);
+    //this.planeSpecs = this.importPlane(JSON.stringify(defaultPlane));
     if (this.planeSpecs.basicGeometry) {
       this.model = this.genStandinGeometry(
         this.planeSpecs.basicGeometry?.wingspan,
@@ -97,7 +101,7 @@ export class Plane {
     }
   }
 
-  importPlane(specsJson: string): planeSpecs {
+  importPlane(specsJson: string): PlaneSpecs {
     let planeSpecsIn;
     try {
       planeSpecsIn = JSON.parse(specsJson);
@@ -105,6 +109,7 @@ export class Plane {
       console.log(`JSON parse error on plane import. Specific error: ${err}`);
       return genBasicPlane();
     }
+    console.log('heyo');
     console.log(validate(planeSpecsIn, planeSchema));
     return genBasicPlane();
   }
