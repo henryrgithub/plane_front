@@ -4,8 +4,14 @@
   "description": "A plane for use in a simple simulator",
   "type": "object",
   "properties": {
-    "created": "string",
-    "updated": "string",
+    "created": {
+      "type": "string",
+      "description": "DateTime first created"
+    },
+    "updated": {
+      "type": "string",
+      "description": "DateTime last modified"
+    },
     "oneOf": [
       {
       "basicGeometry": {
