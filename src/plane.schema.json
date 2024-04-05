@@ -12,33 +12,28 @@
       "type": "string",
       "description": "DateTime last modified"
     },
-    "planeGeometry":{
-    "oneOf": [
-      {
-      "basicGeometry": {
-        "type": "object",
-        "properties": {
-          "wingspanMeters": "number",
-          "lengthMeters": "number",
-          "chordMeters": "number"
+    "planeGeometry": {
+      "oneOf": [
+        {
+          "basicGeometry": {
+            "type": "object",
+            "properties": {
+              "wingspanMeters": "number",
+              "lengthMeters": "number",
+              "chordMeters": "number"
+            }
+          }
         }
-      }
-      }
-    ]
+      ]
     },
     "controlLoops": {
       "type": "array",
       "items": {
         "frequencyHz": "integer",
         "interrupts": {
-          "anyOf": [
-            {"pitch": "bool"},
-            {"yaw": "bool"},
-            {"roll": "bool"}
-          ]
+          "anyOf": [{"pitch": "bool"}, {"yaw": "bool"}, {"roll": "bool"}]
         }
       }
     }
   }
 }
-
