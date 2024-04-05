@@ -11,6 +11,9 @@
 import * as THREE from 'three';
 import {option} from 'fp-ts';
 import * as defaultPlane from './default-plane.json';
+import {Validator, validate} from 'jsonschema';
+import * as planeSchema from './example.schema.json';
+//import * as planeSchema from './plane.schema.json';
 
 interface basicGeometry {
   wingspan: number;
@@ -78,9 +81,7 @@ export class Plane {
   private planeSpecs: planeSpecs;
 
   constructor() {
-    this.planeSpecs = option.getOrElse(() => genBasicPlane())(
-      this.importPlane(JSON.stringify(defaultPlane))
-    );
+    this.planeSpecs = this.importPlane(JSON.stringify(defaultPlane));
     if (this.planeSpecs.basicGeometry) {
       this.model = this.genStandinGeometry(
         this.planeSpecs.basicGeometry?.wingspan,
@@ -96,7 +97,19 @@ export class Plane {
     }
   }
 
-  importPlane(specsJson: string): option.Option<planeSpecs> {
+  importPlane(specsJson: string): planeSpecs {
+    let planeSpecsIn;
+    try {
+      planeSpecsIn = JSON.parse(specsJson);
+    } catch (err) {
+      console.log(`JSON parse error on plane import. Specific error: ${err}`);
+      return genBasicPlane();
+    }
+    console.log(validate(planeSpecsIn, planeSchema));
+    return genBasicPlane();
+  }
+
+  importPlaneOld(specsJson: string): option.Option<planeSpecs> {
     let planeSpecsIn;
     try {
       planeSpecsIn = JSON.parse(specsJson);
