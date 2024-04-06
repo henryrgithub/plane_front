@@ -9,11 +9,14 @@
 // -- Remove boxMesh and coneMesh
 
 import * as THREE from 'three';
-import {option} from 'fp-ts';
 import * as defaultPlane from './default-plane.json';
-import {validate} from 'jsonschema';
 import {FromSchema} from 'json-schema-to-ts';
-//import * as planeSchema from './plane.schema.json';
+
+enum interruptTypes {
+  'yaw',
+  'pitch',
+  'roll',
+}
 
 const planeSchema = {
   type: 'object',
@@ -27,49 +30,61 @@ const planeSchema = {
       description: 'DateTime last modified',
     },
     planeGeometry: {
+      type: 'object',
       oneOf: [
         {
-          basicGeometry: {
-            type: 'object',
-            properties: {
-              wingspanMeters: 'number',
-              lengthMeters: 'number',
-              chordMeters: 'number',
-            },
+          type: 'object',
+          properties: {
+            wingspanMeters: {type: 'number'},
+            lengthMeters: {type: 'number'},
+            chordMeters: {type: 'number'},
           },
+          required: ['wingspanMeters', 'lengthMeters', 'chordMeters'],
+          additionalProperties: false,
         },
       ],
     },
     controlLoops: {
       type: 'array',
       items: {
-        frequencyHz: 'integer',
-        interrupts: {
-          anyOf: [{pitch: 'bool'}, {yaw: 'bool'}, {roll: 'bool'}],
+        type: 'object',
+        properties: {
+          frequencyHz: {type: 'integer'},
+          interrupts: {
+            type: 'array',
+            items: {
+              type: 'string',
+              enum: Object.keys(interruptTypes),
+            },
+          },
         },
+        required: ['frequencyHz', 'interrupts'],
+        additionalProperties: false,
       },
     },
   },
+  required: ['created', 'updated', 'planeGeometry', 'controlLoops'],
+  additionalProperties: false,
 } as const;
 
 type PlaneSpecs = FromSchema<typeof planeSchema>;
 
 function genBasicPlane(): PlaneSpecs {
   const basicGeometry = {
-    wingspan: 1.1,
-    length: 0.4,
-    chord: 0.1,
+    wingspanMeters: 1.1,
+    lengthMeters: 0.4,
+    chordMeters: 0.1,
   };
   const interrupts = ['yaw', 'pitch', 'roll'];
   const controlLoop = {
-    frequency: 600,
+    frequencyHz: 600,
     interrupts: interrupts,
   };
   const controlLoops = [controlLoop];
-  const plane = {
+  const plane: PlaneSpecs = {
     created: '2024-02-27T05:27:00.000Z',
     updated: '2024-02-27T05:27:00.000Z',
-    basicGeometry: basicGeometry,
+    planeGeometry: basicGeometry,
     controlLoops: controlLoops,
   };
   return plane;
@@ -77,54 +92,22 @@ function genBasicPlane(): PlaneSpecs {
 
 export class Plane {
   private static readonly MATERIAL = new THREE.MeshNormalMaterial();
-  private static readonly defaultWingspan = 1.1;
-  private static readonly defaultLength = 0.4;
-  private static readonly defaultChord = 0.1;
   model: THREE.Group;
   private planeSpecs: PlaneSpecs;
 
   constructor() {
-    this.planeSpecs = this.importPlane(defaultPlane);
-    //this.planeSpecs = this.importPlane(JSON.stringify(defaultPlane));
-    if (this.planeSpecs.basicGeometry) {
-      this.model = this.genStandinGeometry(
-        this.planeSpecs.basicGeometry?.wingspan,
-        this.planeSpecs.basicGeometry?.length,
-        this.planeSpecs.basicGeometry?.chord
-      );
-    } else {
-      this.model = this.genStandinGeometry(
-        Plane.defaultWingspan,
-        Plane.defaultLength,
-        Plane.defaultChord
-      );
-    }
-  }
-
-  importPlane(specsJson: string): PlaneSpecs {
-    let planeSpecsIn;
     try {
-      planeSpecsIn = JSON.parse(specsJson);
+      this.planeSpecs = defaultPlane as PlaneSpecs;
     } catch (err) {
-      console.log(`JSON parse error on plane import. Specific error: ${err}`);
-      return genBasicPlane();
+      console.error('Error importing plane specs, specific error:');
+      console.error(err);
+      this.planeSpecs = genBasicPlane();
     }
-    console.log('heyo');
-    console.log(validate(planeSpecsIn, planeSchema));
-    return genBasicPlane();
-  }
-
-  importPlaneOld(specsJson: string): option.Option<planeSpecs> {
-    let planeSpecsIn;
-    try {
-      planeSpecsIn = JSON.parse(specsJson);
-    } catch (err) {
-      console.log(`JSON parse error on plane import. Specific error: ${err}`);
-      return option.none;
-    }
-    if (planeSpecsIn.basicGeometry || planeSpecsIn.vertexGeometry)
-      return option.some(planeSpecsIn);
-    return option.none;
+    this.model = this.genStandinGeometry(
+      this.planeSpecs.planeGeometry.wingspanMeters,
+      this.planeSpecs.planeGeometry.lengthMeters,
+      this.planeSpecs.planeGeometry.chordMeters
+    );
   }
 
   genStandinGeometry(
