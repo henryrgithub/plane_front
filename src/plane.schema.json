@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Plane",
+  "description": "A plane for use in a simple simulator",
+  "type": "object",
+  "properties": {
+    "created": {
+      "type": "string",
+      "description": "DateTime first created"
+    },
+    "updated": {
+      "type": "string",
+      "description": "DateTime last modified"
+    },
+    "planeGeometry": {
+      "oneOf": [
+        {
+          "basicGeometry": {
+            "type": "object",
+            "properties": {
+              "wingspanMeters": "number",
+              "lengthMeters": "number",
+              "chordMeters": "number"
+            }
+          }
+        }
+      ]
+    },
+    "controlLoops": {
+      "type": "array",
+      "items": {
+        "frequencyHz": "integer",
+        "interrupts": {
+          "anyOf": [{"pitch": "bool"}, {"yaw": "bool"}, {"roll": "bool"}]
+        }
+      }
+    }
+  }
+}

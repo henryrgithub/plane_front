@@ -3,12 +3,16 @@ import {Plane} from './plane';
 
 export class Sim {
   private vis: Vis;
-  private mainPlane: Plane;
+  private planes: Plane[];
 
   constructor() {
     this.vis = new Vis();
-    this.mainPlane = new Plane(1.1, 0.4, 0.1);
-    this.vis.addAircraftModels(this.mainPlane);
+    this.planes = [];
+  }
+
+  addPlane(planeIn: Plane) {
+    this.planes.push(planeIn);
+    this.vis.addAircraftModels(planeIn);
   }
 
   attachTo(element: Element) {

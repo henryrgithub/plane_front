@@ -9,19 +9,98 @@
 // -- Remove boxMesh and coneMesh
 
 import * as THREE from 'three';
+import {FromSchema} from 'json-schema-to-ts';
+
+enum InterruptTypes {
+  YAW,
+  PITCH,
+  ROLL,
+}
+
+export const planeSchema = {
+  type: 'object',
+  properties: {
+    created: {
+      type: 'string',
+      description: 'DateTime first created',
+    },
+    updated: {
+      type: 'string',
+      description: 'DateTime last modified',
+    },
+    planeGeometry: {
+      type: 'object',
+      oneOf: [
+        {
+          type: 'object',
+          properties: {
+            wingspanMeters: {type: 'number'},
+            lengthMeters: {type: 'number'},
+            chordMeters: {type: 'number'},
+          },
+          required: ['wingspanMeters', 'lengthMeters', 'chordMeters'],
+          additionalProperties: false,
+        },
+      ],
+    },
+    controlLoops: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          frequencyHz: {type: 'integer'},
+          interrupts: {
+            type: 'array',
+            items: {
+              type: 'string',
+              enum: Object.keys(InterruptTypes),
+            },
+          },
+        },
+        required: ['frequencyHz', 'interrupts'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['created', 'updated', 'planeGeometry', 'controlLoops'],
+  additionalProperties: false,
+} as const;
+
+export type PlaneSpecs = FromSchema<typeof planeSchema>;
+
+export function genBasicPlane(): PlaneSpecs {
+  const basicGeometry = {
+    wingspanMeters: 1.1,
+    lengthMeters: 0.4,
+    chordMeters: 0.1,
+  };
+  const interrupts = ['YAW', 'PITCH', 'ROLL'];
+  const controlLoop = {
+    frequencyHz: 600,
+    interrupts: interrupts,
+  };
+  const controlLoops = [controlLoop];
+  const plane: PlaneSpecs = {
+    created: '2024-02-27T05:27:00.000Z',
+    updated: '2024-02-27T05:27:00.000Z',
+    planeGeometry: basicGeometry,
+    controlLoops: controlLoops,
+  };
+  return plane;
+}
 
 export class Plane {
   private static readonly MATERIAL = new THREE.MeshNormalMaterial();
-  private wingspan: number;
-  private length: number;
-  private chord: number;
-  private model: THREE.Group;
+  model: THREE.Group;
+  private planeSpecs: PlaneSpecs;
 
-  constructor(wingspan: number, length: number, chord: number) {
-    this.wingspan = wingspan;
-    this.length = length;
-    this.chord = chord;
-    this.model = this.genStandinGeometry(wingspan, length, chord);
+  constructor(specsIn: PlaneSpecs) {
+    this.planeSpecs = specsIn;
+    this.model = this.genStandinGeometry(
+      this.planeSpecs.planeGeometry.wingspanMeters,
+      this.planeSpecs.planeGeometry.lengthMeters,
+      this.planeSpecs.planeGeometry.chordMeters
+    );
   }
 
   genStandinGeometry(
