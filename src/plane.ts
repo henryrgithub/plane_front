@@ -11,11 +11,13 @@
 import * as THREE from 'three';
 import * as defaultPlane from './default-plane.json';
 import {FromSchema} from 'json-schema-to-ts';
+import {validate} from 'jsonschema';
+import Ajv from 'ajv';
 
-enum interruptTypes {
-  'yaw',
-  'pitch',
-  'roll',
+enum InterruptTypes {
+  'YAW',
+  'PITCH',
+  'ROLL',
 }
 
 const planeSchema = {
@@ -54,7 +56,7 @@ const planeSchema = {
             type: 'array',
             items: {
               type: 'string',
-              enum: Object.keys(interruptTypes),
+              enum: Object.keys(InterruptTypes),
             },
           },
         },
@@ -75,7 +77,7 @@ function genBasicPlane(): PlaneSpecs {
     lengthMeters: 0.4,
     chordMeters: 0.1,
   };
-  const interrupts = ['yaw', 'pitch', 'roll'];
+  const interrupts = ['YAW', 'PITCH', 'ROLL'];
   const controlLoop = {
     frequencyHz: 600,
     interrupts: interrupts,
@@ -98,9 +100,17 @@ export class Plane {
   constructor() {
     try {
       this.planeSpecs = defaultPlane as PlaneSpecs;
+
+      const valid = validate(this.planeSpecs, planeSchema);
+
+      /*const ajv = new Ajv();
+      const validate = ajv.compile(planeSchema);
+      const valid = validate(defaultPlane);*/
+      if (!valid) throw "Plane specs don't match schema";
     } catch (err) {
       console.error('Error importing plane specs, specific error:');
       console.error(err);
+      alert('Error importing plane specs, generating a simplified plane');
       this.planeSpecs = genBasicPlane();
     }
     this.model = this.genStandinGeometry(
