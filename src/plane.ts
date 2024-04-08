@@ -12,7 +12,6 @@ import * as THREE from 'three';
 import * as defaultPlane from './default-plane.json';
 import {FromSchema} from 'json-schema-to-ts';
 import {validate} from 'jsonschema';
-import Ajv from 'ajv';
 
 enum InterruptTypes {
   'YAW',
@@ -20,7 +19,7 @@ enum InterruptTypes {
   'ROLL',
 }
 
-const planeSchema = {
+export const planeSchema = {
   type: 'object',
   properties: {
     created: {
@@ -69,9 +68,9 @@ const planeSchema = {
   additionalProperties: false,
 } as const;
 
-type PlaneSpecs = FromSchema<typeof planeSchema>;
+export type PlaneSpecs = FromSchema<typeof planeSchema>;
 
-function genBasicPlane(): PlaneSpecs {
+export function genBasicPlane(): PlaneSpecs {
   const basicGeometry = {
     wingspanMeters: 1.1,
     lengthMeters: 0.4,
@@ -97,15 +96,10 @@ export class Plane {
   model: THREE.Group;
   private planeSpecs: PlaneSpecs;
 
-  constructor() {
+  /*constructor() {
     try {
       this.planeSpecs = defaultPlane as PlaneSpecs;
-
       const valid = validate(this.planeSpecs, planeSchema);
-
-      /*const ajv = new Ajv();
-      const validate = ajv.compile(planeSchema);
-      const valid = validate(defaultPlane);*/
       if (!valid) throw "Plane specs don't match schema";
     } catch (err) {
       console.error('Error importing plane specs, specific error:');
@@ -113,6 +107,15 @@ export class Plane {
       alert('Error importing plane specs, generating a simplified plane');
       this.planeSpecs = genBasicPlane();
     }
+    this.model = this.genStandinGeometry(
+      this.planeSpecs.planeGeometry.wingspanMeters,
+      this.planeSpecs.planeGeometry.lengthMeters,
+      this.planeSpecs.planeGeometry.chordMeters
+    );
+  }*/
+
+  constructor(specsIn: PlaneSpecs) {
+    this.planeSpecs = specsIn;
     this.model = this.genStandinGeometry(
       this.planeSpecs.planeGeometry.wingspanMeters,
       this.planeSpecs.planeGeometry.lengthMeters,
