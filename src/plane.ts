@@ -9,14 +9,12 @@
 // -- Remove boxMesh and coneMesh
 
 import * as THREE from 'three';
-import * as defaultPlane from './default-plane.json';
 import {FromSchema} from 'json-schema-to-ts';
-import {validate} from 'jsonschema';
 
 enum InterruptTypes {
-  'YAW',
-  'PITCH',
-  'ROLL',
+  YAW,
+  PITCH,
+  ROLL,
 }
 
 export const planeSchema = {
@@ -95,24 +93,6 @@ export class Plane {
   private static readonly MATERIAL = new THREE.MeshNormalMaterial();
   model: THREE.Group;
   private planeSpecs: PlaneSpecs;
-
-  /*constructor() {
-    try {
-      this.planeSpecs = defaultPlane as PlaneSpecs;
-      const valid = validate(this.planeSpecs, planeSchema);
-      if (!valid) throw "Plane specs don't match schema";
-    } catch (err) {
-      console.error('Error importing plane specs, specific error:');
-      console.error(err);
-      alert('Error importing plane specs, generating a simplified plane');
-      this.planeSpecs = genBasicPlane();
-    }
-    this.model = this.genStandinGeometry(
-      this.planeSpecs.planeGeometry.wingspanMeters,
-      this.planeSpecs.planeGeometry.lengthMeters,
-      this.planeSpecs.planeGeometry.chordMeters
-    );
-  }*/
 
   constructor(specsIn: PlaneSpecs) {
     this.planeSpecs = specsIn;

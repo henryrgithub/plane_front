@@ -9,9 +9,6 @@ export class Sim {
   constructor() {
     this.vis = new Vis();
     this.planes = [];
-    //this.mainPlane = new Plane();
-    //const plane = new Plane();
-    //this.vis.addAircraftModels(plane);
   }
 
   addPlane(planeIn: Plane) {
