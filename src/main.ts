@@ -26,7 +26,7 @@ function importPlane(specsIn: PlaneSpecs) {
 const localSim = new Sim();
 const renderWindow = document.querySelector('.renderWindow');
 
-/*jslint eqeqeq: false*/
+/*eslint eqeqeq: 0*/
 if (renderWindow != null) localSim.attachTo(renderWindow);
 
 importPlane(defaultPlane);

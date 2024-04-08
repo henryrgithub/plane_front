@@ -3,7 +3,6 @@ import {Plane} from './plane';
 
 export class Sim {
   private vis: Vis;
-  //private mainPlane: Plane;
   private planes: Plane[];
 
   constructor() {

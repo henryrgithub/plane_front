@@ -24,7 +24,6 @@
     "vite": "^5.1.0"
   },
   "dependencies": {
-    "fp-ts": "^2.16.2",
     "jsonschema": "github:tdegrunt/jsonschema",
     "mathjs": "^12.3.2",
     "three": "^0.161.0"
