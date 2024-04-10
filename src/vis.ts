@@ -12,6 +12,7 @@ export class Vis {
   private static readonly camAspectDefault = 1; //should be overwritten on attach or resize
   private static readonly camNearFrustum = 0.01;
   private static readonly camFarFrustum = 10;
+  public animationCallbacks: Function[];
 
   constructor() {
     this.camera = new THREE.PerspectiveCamera(
@@ -32,18 +33,30 @@ export class Vis {
     this.camControls = new OrbitControls(this.camera, this.renderer.domElement);
     this.camControls.update();
 
+    this.animationCallbacks = [];
+    this.addAnimationCallback(this.drawFrame);
+  }
+
+  addAnimationCallback(funcIn: Function) {
+    this.animationCallbacks.push(funcIn);
+    this.attachFrameUpdateCallbacks();
+  }
+
+  attachFrameUpdateCallbacks() {
     this.renderer.setAnimationLoop(time => {
-      this.drawFrame(time);
+      for (let i = 0; i < this.animationCallbacks.length; i++) {
+        this.animationCallbacks[i](time);
+      }
     });
   }
 
-  drawFrame(time: DOMHighResTimeStamp) {
-    // time is dead for now but will be used for physics sim
+  drawFrame = (time: DOMHighResTimeStamp) => {
     this.renderer.render(this.scene, this.camera);
-  }
+  };
 
   addAircraftModels(plane: Plane) {
     this.aircraftModels.add(plane.model);
+    this.addAnimationCallback(plane.simFrame);
   }
 
   attachTo(element: Element) {

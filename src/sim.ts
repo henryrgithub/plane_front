@@ -4,6 +4,7 @@ import {Plane} from './plane';
 export class Sim {
   private vis: Vis;
   private planes: Plane[];
+  private static readonly SIMRATEHZ = 240;
 
   constructor() {
     this.vis = new Vis();

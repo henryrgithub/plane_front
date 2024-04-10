@@ -93,6 +93,7 @@ export class Plane {
   private static readonly MATERIAL = new THREE.MeshNormalMaterial();
   model: THREE.Group;
   private planeSpecs: PlaneSpecs;
+  private localVel: number[];
 
   constructor(specsIn: PlaneSpecs) {
     this.planeSpecs = specsIn;
@@ -101,7 +102,14 @@ export class Plane {
       this.planeSpecs.planeGeometry.lengthMeters,
       this.planeSpecs.planeGeometry.chordMeters
     );
+    this.localVel = Array(6).fill(0.0);
   }
+
+  simFrame = (time: DOMHighResTimeStamp) => {
+    const pos = new THREE.Vector3();
+    this.model.getWorldPosition(pos);
+    this.model.position.setZ(1 * Math.sin(time / 1000));
+  };
 
   genStandinGeometry(
     wingspan: number,
