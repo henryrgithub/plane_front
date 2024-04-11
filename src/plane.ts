@@ -61,6 +61,54 @@ export const planeSchema = {
         additionalProperties: false,
       },
     },
+    xPerturbVec: {
+      type: 'array',
+      items: {
+        type: 'number',
+      },
+      minItems: 10,
+      maxItems: 10,
+    },
+    yPerturbVec: {
+      type: 'array',
+      items: {
+        type: 'number',
+      },
+      minItems: 10,
+      maxItems: 10,
+    },
+    vPerturbVec: {
+      type: 'array',
+      items: {
+        type: 'number',
+      },
+      minItems: 10,
+      maxItems: 10,
+    },
+    lPerturbVec: {
+      type: 'array',
+      items: {
+        type: 'number',
+      },
+      minItems: 10,
+      maxItems: 10,
+    },
+    mPerturbVec: {
+      type: 'array',
+      items: {
+        type: 'number',
+      },
+      minItems: 10,
+      maxItems: 10,
+    },
+    nPerturbVec: {
+      type: 'array',
+      items: {
+        type: 'number',
+      },
+      minItems: 10,
+      maxItems: 10,
+    },
   },
   required: ['created', 'updated', 'planeGeometry', 'controlLoops'],
   additionalProperties: false,
