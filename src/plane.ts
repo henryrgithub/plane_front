@@ -12,9 +12,9 @@ import * as THREE from 'three';
 import {FromSchema} from 'json-schema-to-ts';
 
 enum InterruptTypes {
-  YAW,
-  PITCH,
-  ROLL,
+  YAW = 'YAW',
+  PITCH = 'PITCH',
+  ROLL = 'ROLL',
 }
 
 export const planeSchema = {
@@ -61,62 +61,69 @@ export const planeSchema = {
         additionalProperties: false,
       },
     },
-    xPerturbVec: {
-      type: 'array',
-      items: {
-        type: 'number',
-      },
-      minItems: 10,
-      maxItems: 10,
+    masskg: {
+      type: 'number',
     },
-    yPerturbVec: {
+    comPosm: {
       type: 'array',
       items: {
         type: 'number',
       },
-      minItems: 10,
-      maxItems: 10,
+      minItems: 3,
+      maxItems: 3,
     },
-    vPerturbVec: {
-      type: 'array',
-      items: {
-        type: 'number',
-      },
-      minItems: 10,
-      maxItems: 10,
+    thrustN: {
+      type: 'number',
     },
-    lPerturbVec: {
+    rotInertiakgm2: {
       type: 'array',
       items: {
         type: 'number',
       },
-      minItems: 10,
-      maxItems: 10,
+      minItems: 3,
+      maxItems: 3,
     },
-    mPerturbVec: {
-      type: 'array',
-      items: {
-        type: 'number',
-      },
-      minItems: 10,
-      maxItems: 10,
+
+    perturbMatrixVtoF: {
+      $ref: '#/$defs/perturbMatrix',
     },
-    nPerturbVec: {
-      type: 'array',
-      items: {
-        type: 'number',
-      },
-      minItems: 10,
-      maxItems: 10,
+    perturbMatrixVtoM: {
+      $ref: '#/$defs/perturbMatrix',
+    },
+    perturbMatrixRatetoM: {
+      $ref: '#/$defs/perturbMatrix',
+    },
+    perturbMatrixControltoM: {
+      $ref: '#/$defs/perturbMatrix',
     },
   },
-  required: ['created', 'updated', 'planeGeometry', 'controlLoops'],
+  required: [
+    'created',
+    'updated',
+    'planeGeometry',
+    'controlLoops',
+    'masskg',
+    'comPosm',
+    'thrustN',
+    'rotInertiakgm2',
+    'perturbMatrixVtoF',
+    'perturbMatrixVtoM',
+    'perturbMatrixRatetoM',
+    'perturbMatrixControltoM',
+  ],
   additionalProperties: false,
+  $defs: {
+    perturbMatrix: {
+      type: 'array',
+      minItems: 9,
+      maxItems: 9,
+    },
+  },
 } as const;
 
 export type PlaneSpecs = FromSchema<typeof planeSchema>;
 
-export function genBasicPlane(): PlaneSpecs {
+/*export function genBasicPlane(): PlaneSpecs {
   const basicGeometry = {
     wingspanMeters: 1.1,
     lengthMeters: 0.4,
@@ -135,13 +142,13 @@ export function genBasicPlane(): PlaneSpecs {
     controlLoops: controlLoops,
   };
   return plane;
-}
+}*/
 
 export class Plane {
   private static readonly MATERIAL = new THREE.MeshNormalMaterial();
   model: THREE.Group;
   private planeSpecs: PlaneSpecs;
-  private localVel: number[];
+  private flightState: number[];
 
   constructor(specsIn: PlaneSpecs) {
     this.planeSpecs = specsIn;
@@ -150,10 +157,16 @@ export class Plane {
       this.planeSpecs.planeGeometry.lengthMeters,
       this.planeSpecs.planeGeometry.chordMeters
     );
-    this.localVel = Array(6).fill(0.0);
+    this.flightState = Array(10).fill(0.0);
   }
 
-  simFrame = (time: DOMHighResTimeStamp) => {
+  simFrame(timeStep: number) {
+    this.perturbPlane();
+    this.movePlane();
+    this.updatePerturbations();
+  }
+
+  moveFrame = (time: DOMHighResTimeStamp) => {
     const pos = new THREE.Vector3();
     this.model.getWorldPosition(pos);
     this.model.position.setZ(1 * Math.sin(time / 1000));

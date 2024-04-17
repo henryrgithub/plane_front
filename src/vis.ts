@@ -56,7 +56,7 @@ export class Vis {
 
   addAircraftModels(plane: Plane) {
     this.aircraftModels.add(plane.model);
-    this.addAnimationCallback(plane.simFrame);
+    this.addAnimationCallback(plane.moveFrame);
   }
 
   attachTo(element: Element) {
