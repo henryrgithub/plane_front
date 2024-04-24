@@ -6,8 +6,10 @@
     "lib": [
       "dom"
     ],
+    "module": "ES6",
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "bundler"
   },
   "include": [
     "src/**/*.ts",

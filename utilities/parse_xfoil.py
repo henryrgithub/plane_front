@@ -11,10 +11,14 @@ with open(filename, newline='') as file:
   for _ in range(12):
     next(reader)
   CDholder = []
+  CMholder = []
   for line in reader:
     print("[" + line["alpha"] + "," + line["CL"] + "],")
     CDholder.append("[" + line["alpha"] + "," + line["CD"] + "],")
+    CMholder.append("[" + line["alpha"] + "," + line["CM"] + "],")
   for line in CDholder:
+    print(line)
+  for line in CMholder:
     print(line)
 #reader = csv.reader(file,delimiter="\t")
 #for line in reader:
