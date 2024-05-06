@@ -247,6 +247,7 @@ export type PlaneSpecs = FromSchema<
     //references: [typeof surfaceSchema, typeof airfoilSchema, typeof bodySchema];
   }
 >;
+export type TestSpecs = FromSchma;
 export const surfaceSchema = {
   $id: 'http://example.com/schemas/surfaceSchema.json',
   type: 'object',
@@ -375,7 +376,8 @@ class AeroBody {
   private heightm: number;
   private posm: number[];
   private coeffFricUL: number;
-  constructor(specsIn: BodySpecs) {
+  //constructor(specsIn: BodySpecs) {
+  constructor(specsIn: PlaneSpecs.bodies) {
     this.lengthm = specsIn.lengthm;
     this.widthm = specsIn.widthm;
     this.heightm = specsIn.heightm;
