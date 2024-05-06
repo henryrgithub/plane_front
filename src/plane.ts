@@ -99,14 +99,129 @@ export const planeSchema = {
       type: 'array',
       items: {
         //$ref: 'bodySchema.json',
-        $ref: 'http://example.com/schemas/bodySchema.json',
+        //$ref: 'http://example.com/schemas/bodySchema.json',
+        type: 'object',
+        properties: {
+          name: {type: 'string'},
+          posm: {
+            type: 'array',
+            items: {type: 'number'},
+            minItems: 3,
+            maxItems: 3,
+          },
+          lengthm: {type: 'number'},
+          heightm: {type: 'number'},
+          widthm: {type: 'number'},
+          coeffFricUL: {type: 'number'},
+        },
+        required: [
+          'name',
+          'posm',
+          'lengthm',
+          'heightm',
+          'widthm',
+          'coeffFricUL',
+        ],
+        additionalProperties: false,
         //type: 'number',
       },
     },
     surfaces: {
       type: 'array',
       items: {
-        $ref: 'surfaceSchema.json',
+        //$ref: 'surfaceSchema.json',
+        type: 'object',
+        properties: {
+          name: {type: 'string'},
+          mirrored: {type: 'boolean'},
+          rootPosm: {
+            type: 'array',
+            items: {type: 'number'},
+            minItems: 3,
+            maxItems: 3,
+          },
+          rotationrad: {type: 'number'},
+          foilSections: {
+            type: 'array',
+            items: {
+              //$ref: 'airfoilSchema.json',
+              type: 'object',
+              properties: {
+                name: {type: 'string'},
+                rootChordm: {type: 'number'},
+                lengthm: {type: 'number'},
+                thicknessUL: {type: 'number'},
+                cLCurve: {
+                  type: 'array',
+                  items: {
+                    type: 'array',
+                    items: {type: 'number'},
+                    minItems: 2,
+                    maxItems: 2,
+                  },
+                  minItems: 10,
+                },
+                cDCurve: {
+                  type: 'array',
+                  items: {
+                    type: 'array',
+                    items: {type: 'number'},
+                    minItems: 2,
+                    maxItems: 2,
+                  },
+                  minItems: 10,
+                },
+                cMCurve: {
+                  type: 'array',
+                  items: {
+                    type: 'array',
+                    items: {type: 'number'},
+                    minItems: 2,
+                    maxItems: 2,
+                  },
+                  minItems: 10,
+                },
+              },
+              required: [
+                'name',
+                'rootChordm',
+                'lengthm',
+                'thicknessUL',
+                'cLCurve',
+                'cDCurve',
+                'cMCurve',
+              ],
+              additionalProperties: false,
+              //type: 'airfoilSchema',
+            },
+            minItems: 1,
+          },
+          isControlSurface: {type: 'boolean'},
+          relActuationPosm: {type: 'number'},
+          actuationAxes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                axis: {
+                  type: 'string',
+                  enum: Object.keys(InterruptTypes),
+                },
+                invertControl: {type: 'boolean'},
+                maxActuation: {type: 'number'},
+              },
+            },
+          },
+        },
+        required: [
+          'name',
+          'mirrored',
+          'rootPosm',
+          'rotationrad',
+          'foilSections',
+          'isControlSurface',
+        ],
+        additionalProperties: false,
       },
       minItems: 1,
     },
@@ -128,7 +243,7 @@ export const planeSchema = {
 export type PlaneSpecs = FromSchema<
   typeof planeSchema,
   {
-    references: [typeof bodySchema];
+    //references: [typeof bodySchema];
     //references: [typeof surfaceSchema, typeof airfoilSchema, typeof bodySchema];
   }
 >;
