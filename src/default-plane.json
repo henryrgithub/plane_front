@@ -12,16 +12,16 @@
     }
   ],
   "thrustN": 1.0,
-  "masskg": 3.0,
-  "comPosm": [ -0.5, 0.0, 0.0 ],
+  "masskg": 0.25,
+  "comPosm": [ -0.2, 0.0, 0.0 ],
   "rotInertiakgm2": [ 0.2 , 0.2 , 0.2 ],
   "bodies": [
     {
       "name": "fuselage",
       "posm": [0.0, 0.0, 0.0],
-      "lengthm": 1.0,
+      "lengthm": 0.4,
       "heightm": 0.03,
-      "widthm": 0.03,
+      "widthm": 0.06,
       "coeffFricUL": 0.1
     }
   ],
@@ -29,7 +29,7 @@
     {
       "name": "wingR",
       "mirrored": true,
-      "rootPosm": [-0.8,0.1,0.0],
+      "rootPosm": [-0.2,0.03,0.0],
       "rotationrad": 0.0,
       "isControlSurface": false,
       "foilSections": [{
@@ -301,13 +301,13 @@
     {
       "name": "Vertical Stabilizer",
       "mirrored": false,
-      "rootPosm": [-0.9,0.0,0.1],
-      "rotationrad": -1.5708,
+      "rootPosm": [-0.3,0.0,0.0],
+      "rotationrad": 1.5708,
       "isControlSurface": false,
       "foilSections": [{
         "name": "NACA 0015",
         "rootChordm": 0.1,
-        "lengthm": 0.2,
+        "lengthm": 0.1,
         "thicknessUL": 0.15,
         "cLCurve":[
           [-11.000,-0.8022],
