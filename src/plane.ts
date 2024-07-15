@@ -322,6 +322,7 @@ class Airfoil {
   }
   findForceandMoment(relWindmps: THREE.Vector3,airDenskgPerm3: number, angleOfAttackdeg: number,combinedFlow: number): ForceMovementStruct {
     let aoADefined = this.checkAoA(angleOfAttackdeg);
+    let zeroCoordForceMoment = new ForceMovementStruct(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0));
     if(aoADefined){
       let dynPressPa = airDenskgPerm3 * (combinedFlow ** 2) / 2
       let cL = this.interpolateCoeff(this.cLCurve,angleOfAttackdeg);
@@ -344,8 +345,8 @@ class Airfoil {
       let crossAeroForceMomentTranslated = crossAeroForceMomentUntranslated.translate(this.centroid);
 
       let combinedForceMoment = mainAeroForceMomentTranslated.sumWith(crossAeroForceMomentTranslated);
-      let zeroCoordForceMoment = combinedForceMoment.translate(this.rootCoords);
-      return zeroCoordForceMoment;
+      zeroCoordForceMoment = combinedForceMoment.translate(this.rootCoords);
+      //return zeroCoordForceMoment;
       //return combinedForceMoment;
     }
     else{
@@ -357,10 +358,11 @@ class Airfoil {
       let aeroMoment = new THREE.Vector3(0,0,0);
       let aeroForceMomentUntranslated = new ForceMovementStruct(aeroForce,aeroMoment);
       let aeroForceMomentTranslated = aeroForceMomentUntranslated.translate(this.centroid);
-      let zeroCoordForceMoment = aeroForceMomentTranslated.translate(this.rootCoords);
-      return zeroCoordForceMoment;
+      zeroCoordForceMoment = aeroForceMomentTranslated.translate(this.rootCoords);
+      //return zeroCoordForceMoment;
     }
 
+    return zeroCoordForceMoment;
   }
   interpolateCoeff(coeffArray: number[][], angleOfAttackdeg: number): number {
     let aoAs = coeffArray.map((x) => x[0]);
@@ -425,15 +427,17 @@ class AeroSurface {
   }
   findForceandMoment(relWindmps: THREE.Vector3, airDenskgPerm3: number): ForceMovementStruct{
     
-      let angleOfAttackdeg = Math.atan(relWindmps.getComponent(2)/relWindmps.getComponent(0))*180/Math.PI;
+      let angleOfAttackdeg = Math.atan(-(relWindmps.getComponent(2))/relWindmps.getComponent(0))*180/Math.PI;
       let combinedFlow = Math.sqrt((relWindmps.getComponent(2)**2) + (relWindmps.getComponent(0)**2));
+      let sumInfluences = new ForceMovementStruct(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0));
       for (const foil of this.foilSections) {
-        let foilInfluences = foil.findForceandMoment(relWindmps,airDenskgPerm3,angleOfAttackdeg,combinedFlow);
+        let foilInfluence = foil.findForceandMoment(relWindmps,airDenskgPerm3,angleOfAttackdeg,combinedFlow);
+        sumInfluences = sumInfluences.sumWith(foilInfluence);
       }
-      /* FIXME */
-      return new ForceMovementStruct(new THREE.Vector3(),new THREE.Vector3());
-
-
+      if(this.isMirror){
+        sumInfluences = sumInfluences.mirrorAcrossXZ();
+      }
+      return sumInfluences;
   }
   //isAoADefineddeg(aoaDeg: number){
 }
@@ -449,12 +453,20 @@ class ForceMovementStruct{
     let momentNm = this.momentNm.clone();
     let vectorDist = new THREE.Vector3(translateFrom[0],translateFrom[1], translateFrom[2]);
     let translationMomentNm = vectorDist.clone().cross(forceN);
+    //let translationMomentNm = forceN.clone().cross(vectorDist);
     let totMoment = momentNm.clone().add(translationMomentNm);
     return new ForceMovementStruct(forceN,totMoment);
   }
   sumWith(toSum: ForceMovementStruct):ForceMovementStruct{
     let forceN = this.forceN.clone().add(toSum.forceN.clone());
     let momentNm = this.momentNm.clone().add(toSum.momentNm.clone());
+    return new ForceMovementStruct(forceN,momentNm);
+  }
+  mirrorAcrossXZ(): ForceMovementStruct{
+    let forceN = this.forceN.clone();
+    let momentNm = this.momentNm.clone();
+    momentNm.setX(-1 * momentNm.getComponent(0));
+    momentNm.setZ(-1 * momentNm.getComponent(2));
     return new ForceMovementStruct(forceN,momentNm);
   }
 }
@@ -466,7 +478,8 @@ class FlightState {
   constructor(startingVel: THREE.Vector3 ) {
     this.velocitymPers = new THREE.Vector3;
     this.velocitymPers.setX(10.0);
-    this.velocitymPers.setY(1.0);
+    this.velocitymPers.setY(0.0);
+    this.velocitymPers.setZ(1.2);
     this.rotRatesradPers = new THREE.Vector3;
   }
 }
@@ -518,6 +531,7 @@ export class Plane {
     let forceN = new THREE.Vector3();
     let momentsNm = new THREE.Vector3();
     //console.log(planeQuat);
+    let allInfluences = new ForceMovementStruct(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0));
     for (const surf of this.aeroSurfaces) {
       let test = new THREE.Quaternion();
       surf.model.getWorldQuaternion(test);
@@ -528,10 +542,11 @@ export class Plane {
       let relRotMatrix = new THREE.Matrix4;
       relRotMatrix.makeRotationFromQuaternion(relrot);
       relRotMatrix.multiply(surf.rotationAdj);
-      let transformedVelmps = this.flightState.velocitymPers.clone();
+      let transformedVelmps = this.flightState.velocitymPers.clone().negate();
       transformedVelmps.applyMatrix4(relRotMatrix);
-      let angleOfAttackdeg = Math.atan(transformedVelmps.getComponent(2)/transformedVelmps.getComponent(0))*180/Math.PI;
-      surf.findForceandMoment(transformedVelmps,Plane.ASLAIRDENSKGPERM3)
+      let angleOfAttackdeg = Math.atan((-transformedVelmps.getComponent(2))/transformedVelmps.getComponent(0))*180/Math.PI;
+      let surfaceInfluence = surf.findForceandMoment(transformedVelmps,Plane.ASLAIRDENSKGPERM3);
+      allInfluences = allInfluences.sumWith(surfaceInfluence);
 
 
 
@@ -543,6 +558,7 @@ export class Plane {
       body.model.getWorldQuaternion(test);
       //console.log(test);
     }
+    console.log(allInfluences);
   }
 
   moveFrame = (time: DOMHighResTimeStamp) => {
