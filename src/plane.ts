@@ -1,9 +1,3 @@
-// todo:
-// - Create geometry more dynamically
-// -- Import structure that represents shape of plane, conver to group of extrudeGeometries
-// -- Have default geometry
-// -- Remove boxMesh and coneMesh
-
 import * as THREE from "three";
 import {
   FromSchema,
