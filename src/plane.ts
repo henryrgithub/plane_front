@@ -355,7 +355,6 @@ class Airfoil {
       zeroCoordForceMoment = aeroForceMomentTranslated.translate(this.rootCoords);
       //return zeroCoordForceMoment;
     }
-
     return zeroCoordForceMoment;
   }
   interpolateCoeff(coeffArray: number[][], angleOfAttackdeg: number): number {
@@ -431,6 +430,8 @@ class AeroSurface {
       if(this.isMirror){
         sumInfluences = sumInfluences.mirrorAcrossXZ();
       }
+      let relCoords = [this.model.position.getComponent(0),this.model.position.getComponent(1),this.model.position.getComponent(2)]
+      sumInfluences=sumInfluences.translate(relCoords);
       return sumInfluences;
   }
   //isAoADefineddeg(aoaDeg: number){
