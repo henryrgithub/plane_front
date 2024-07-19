@@ -1,3 +1,8 @@
+// TODO:
+// - ROTATIONS NOT INCLUDED IN PHYSICS SIM >.<
+// - calc aero forces on aero bodies (only foils done atm)
+// - incorporate wind vel (probably just vec, turbulence not worth it)
+// - make the planet the frame
 import * as THREE from "three";
 import {
   FromSchema,
@@ -443,7 +448,13 @@ class ForceMovementStruct{
     this.forceN = forceN;
     this.momentNm = momentNm;
   }
-  translate(translateFrom: number[]): ForceMovementStruct{
+  translate(translateFromParam: number[], translateTo: boolean = false): ForceMovementStruct{
+    let translateFrom = translateFromParam;
+    if(translateTo){
+      for (let i of translateFrom) {
+        i = -i;
+      }
+    }
     let forceN = this.forceN.clone();
     let momentNm = this.momentNm.clone();
     let vectorDist = new THREE.Vector3(translateFrom[0],translateFrom[1], translateFrom[2]);
@@ -470,13 +481,19 @@ class FlightState {
   public velocitymPers: THREE.Vector3;
   public rotRatesradPers: THREE.Vector3;
 
-  constructor(startingVel: THREE.Vector3 ) {
-    this.velocitymPers = new THREE.Vector3;
-    this.velocitymPers.setX(10.0);
-    this.velocitymPers.setY(0.0);
-    this.velocitymPers.setZ(1.2);
-    this.rotRatesradPers = new THREE.Vector3;
+  constructor(startingVel: THREE.Vector3 = new THREE.Vector3(10,0,1.2), startingRate: THREE.Vector3 = new THREE.Vector3() ) {
+    this.velocitymPers = startingVel;
+    this.rotRatesradPers = startingRate;
+//    this.velocitymPers = new THREE.Vector3;
+//    this.velocitymPers.setX(10.0);
+//    this.velocitymPers.setY(0.0);
+//    this.velocitymPers.setZ(1.2);
+//    this.rotRatesradPers = new THREE.Vector3;
   }
+
+  
+
+
 }
 export class Plane {
   private static readonly FUSEHEADONCF = 0.1;
@@ -488,6 +505,10 @@ export class Plane {
   model: THREE.Group;
   private planeSpecs: PlaneSpecs;
   private flightState: FlightState;
+  private coMm: number[];
+  private masskg: number;
+  private thrustN: number;
+  private rotInertiakgm2: number[];
 
   constructor(specsIn: PlaneSpecs) {
     this.planeSpecs = specsIn;
@@ -495,6 +516,10 @@ export class Plane {
     this.flightState = new FlightState();
     this.aeroSurfaces = [];
     this.aeroBodies = [];
+    this.coMm = specsIn.comPosm;
+    this.masskg = specsIn.masskg;
+    this.thrustN = specsIn.thrustN;
+    this.rotInertiakgm2 = specsIn.rotInertiakgm2;
     for (const bodySpec of specsIn.bodies) {
       const body = new AeroBody(bodySpec);
       this.aeroBodies.push(body);
@@ -513,47 +538,78 @@ export class Plane {
   }
 
   simFrame(time: number) {
-    this.calcAeroForces();
-    //this.calcThurstForce();
-    //this.calcAccelerations(time);
+    let totReacs = this.calcAeroForces();
+    totReacs = totReacs.sumWith( this.calcThrustForce());
+    totReacs = totReacs.sumWith(this.calcGravForce());
+    this.flightState = this.updateFlightState(time,totReacs);
     //this.calcDisplacements(time);
   }
-  calcAeroForces(windDirec: THREE.Quaternion, windVelmps: number): THREE.Vector3 {
+  updateFlightState(timestep: number, reactions: ForceMovementStruct): FlightState {
+    let v0 = this.flightState.velocitymPers.clone();
+    let accel = reactions.forceN.divideScalar(this.masskg);
+    let v1 = v0.add(accel.multiplyScalar(timestep/1000));
+    let r0 = this.flightState.rotRatesradPers.clone();
+    let rotInertiaVec = new THREE.Vector3(this.rotInertiakgm2[0],this.rotInertiakgm2[1],this.rotInertiakgm2[2]);
+    let angAccel = reactions.momentNm.divide(rotInertiaVec);
+    let r1 = r0.add(angAccel.multiplyScalar(timestep/1000));
+    return new FlightState(v1,r1);
+
+  }
+  calcGravForce(): ForceMovementStruct {
+    let moment = new THREE.Vector3(0,0,0);
+    let force = new THREE.Vector3(0,0,-this.masskg*9.81);
+
+
+
     let planeQuat = new THREE.Quaternion();
     this.model.getWorldQuaternion(planeQuat);
     let planeQuatInv = planeQuat.clone();
     planeQuatInv.conjugate();
-    let forceN = new THREE.Vector3();
-    let momentsNm = new THREE.Vector3();
-    //console.log(planeQuat);
+    let worldQuat = new THREE.Quaternion();
+    let conj = worldQuat.clone();
+    conj.conjugate();
+    let relrot = new THREE.Quaternion();
+    relrot.multiplyQuaternions(worldQuat,planeQuatInv);
+    let relRotMatrix = new THREE.Matrix4;
+    relRotMatrix.makeRotationFromQuaternion(relrot);
+
+    let forceTrans = force.applyMatrix4(relRotMatrix);
+    return new ForceMovementStruct(forceTrans,moment);
+  }
+  calcThrustForce(): ForceMovementStruct {
+    let moment = new THREE.Vector3(0,0,0);
+    let force = new THREE.Vector3(-this.thrustN,0,0);
+    return new ForceMovementStruct(force,moment);
+  }
+  calcAeroForces(windDirec: THREE.Quaternion, windVelmps: number): ForceMovementStruct {
+    let planeQuat = new THREE.Quaternion();
+    this.model.getWorldQuaternion(planeQuat);
+    let planeQuatInv = planeQuat.clone();
+    planeQuatInv.conjugate();
     let allInfluences = new ForceMovementStruct(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0));
     for (const surf of this.aeroSurfaces) {
-      let test = new THREE.Quaternion();
-      surf.model.getWorldQuaternion(test);
-      let conj = test.clone();
+      let worldQuat = new THREE.Quaternion();
+      surf.model.getWorldQuaternion(worldQuat);
+      let conj = worldQuat.clone();
       conj.conjugate();
       let relrot = new THREE.Quaternion();
-      relrot.multiplyQuaternions(test,planeQuatInv);
+      relrot.multiplyQuaternions(worldQuat,planeQuatInv);
       let relRotMatrix = new THREE.Matrix4;
       relRotMatrix.makeRotationFromQuaternion(relrot);
       relRotMatrix.multiply(surf.rotationAdj);
       let transformedVelmps = this.flightState.velocitymPers.clone().negate();
       transformedVelmps.applyMatrix4(relRotMatrix);
-      let angleOfAttackdeg = Math.atan((-transformedVelmps.getComponent(2))/transformedVelmps.getComponent(0))*180/Math.PI;
       let surfaceInfluence = surf.findForceandMoment(transformedVelmps,Plane.ASLAIRDENSKGPERM3);
       allInfluences = allInfluences.sumWith(surfaceInfluence);
-
-
-
-
-      //console.log("surface: ", surf.name, ", rel rot: ", relrot, ", transformed vel: ", transformedVelmps, ", AoA: " + angleOfAttackdeg);
     }
     for (const body of this.aeroBodies) {
       let test = new THREE.Quaternion();
       body.model.getWorldQuaternion(test);
       //console.log(test);
     }
+    allInfluences = allInfluences.translate(this.coMm,true);
     console.log(allInfluences);
+    return allInfluences;
   }
 
   moveFrame = (time: DOMHighResTimeStamp) => {
