@@ -301,7 +301,7 @@
     {
       "name": "Vertical Stabilizer",
       "mirrored": false,
-      "rootPosm": [-0.3,0.0,0.0],
+      "rootPosm": [-0.3,0.0,0.015],
       "rotationrad": 1.5708,
       "isControlSurface": false,
       "foilSections": [{

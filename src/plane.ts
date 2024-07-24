@@ -1,5 +1,4 @@
 // TODO:
-// - ROTATIONS NOT INCLUDED IN PHYSICS SIM >.<
 // - calc aero forces on aero bodies (only foils done atm)
 // - incorporate wind vel (probably just vec, turbulence not worth it)
 // - make the planet the frame
@@ -319,7 +318,19 @@ class Airfoil {
   getTipCoords(): number[] {
     return this.tipCoords;
   }
-  findForceandMoment(relWindmps: THREE.Vector3,airDenskgPerm3: number, angleOfAttackdeg: number,combinedFlow: number): ForceMovementStruct {
+  //findForceandMoment(relWindmps: THREE.Vector3,airDenskgPerm3: number, angleOfAttackdeg: number,combinedFlow: number): ForceMovementStruct {
+  findForceandMoment(relWindLinmps: THREE.Vector3,airDenskgPerm3: number, rot: THREE.Vector3, coMPos: THREE.Vector3): ForceMovementStruct {
+    let relcoMPos = coMPos;
+    let coMLeverAdj = new THREE.Vector3(-this.centroid[0],-this.centroid[1],0);
+    relcoMPos.sub(coMLeverAdj);
+    relcoMPos.negate();
+    let rotWindmps = rot.clone();
+    rotWindmps.cross(relcoMPos);
+
+    let relWindmps = relWindLinmps.clone().add(rotWindmps);
+
+    let angleOfAttackdeg = Math.atan(-(relWindmps.getComponent(2))/relWindmps.getComponent(0))*180/Math.PI;
+    let combinedFlow = Math.sqrt((relWindmps.getComponent(2)**2) + (relWindmps.getComponent(0)**2));
     let aoADefined = this.checkAoA(angleOfAttackdeg);
     let zeroCoordForceMoment = new ForceMovementStruct(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0));
     if(aoADefined){
@@ -423,19 +434,31 @@ class AeroSurface {
     }
       
   }
-  findForceandMoment(relWindmps: THREE.Vector3, airDenskgPerm3: number): ForceMovementStruct{
+  //findForceandMoment(relWindmps: THREE.Vector3, airDenskgPerm3: number, rot: THREE.Vector3, coM: number[]): ForceMovementStruct{
+  findForceandMoment(relWindmps: THREE.Vector3, airDenskgPerm3: number, rot: THREE.Vector3, coM: THREE.Vector3): ForceMovementStruct{
     
-      let angleOfAttackdeg = Math.atan(-(relWindmps.getComponent(2))/relWindmps.getComponent(0))*180/Math.PI;
-      let combinedFlow = Math.sqrt((relWindmps.getComponent(2)**2) + (relWindmps.getComponent(0)**2));
+//      let angleOfAttackdeg = Math.atan(-(relWindmps.getComponent(2))/relWindmps.getComponent(0))*180/Math.PI;
+//      let combinedFlow = Math.sqrt((relWindmps.getComponent(2)**2) + (relWindmps.getComponent(0)**2));
       let sumInfluences = new ForceMovementStruct(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0));
+      let relCoords = [this.model.position.getComponent(0),this.model.position.getComponent(1),this.model.position.getComponent(2)]
+      let relCoordsVec = new THREE.Vector3(relCoords[0],relCoords[1],relCoords[2]);
+      
+      //let relCoMpos = new THREE.Vector3(coM[0],coM[1],coM[2]);
+      //relCoMpos.sub(relCoordsVec);
+      //relCoMpos.negate();
+      let relCoMpos = coM;
+      let leverTranslation = new THREE.Vector3(this.rootPosm[0],this.rootPosm[1] * Math.cos(this.rotationrad) + this.rootPosm[2] * Math.sin(this.rotationrad),
+                                               this.rootPosm[2] * Math.cos(this.rotationrad) + this.rootPosm[1] * Math.sin(this.rotationrad));
+      relCoMpos.sub(leverTranslation);
+
+
       for (const foil of this.foilSections) {
-        let foilInfluence = foil.findForceandMoment(relWindmps,airDenskgPerm3,angleOfAttackdeg,combinedFlow);
+        let foilInfluence = foil.findForceandMoment(relWindmps,airDenskgPerm3, rot, relCoMpos);
         sumInfluences = sumInfluences.sumWith(foilInfluence);
       }
       if(this.isMirror){
         sumInfluences = sumInfluences.mirrorAcrossXZ();
       }
-      let relCoords = [this.model.position.getComponent(0),this.model.position.getComponent(1),this.model.position.getComponent(2)]
       sumInfluences=sumInfluences.translate(relCoords);
       return sumInfluences;
   }
@@ -598,8 +621,13 @@ export class Plane {
       relRotMatrix.makeRotationFromQuaternion(relrot);
       relRotMatrix.multiply(surf.rotationAdj);
       let transformedVelmps = this.flightState.velocitymPers.clone().negate();
+      let transformedRotation = this.flightState.rotRatesradPers.clone().negate();
       transformedVelmps.applyMatrix4(relRotMatrix);
-      let surfaceInfluence = surf.findForceandMoment(transformedVelmps,Plane.ASLAIRDENSKGPERM3);
+      transformedRotation.applyMatrix4(relRotMatrix);
+      let transformedCoM = new THREE.Vector3(this.coMm[0],this.coMm[1],this.coMm[2]);
+      transformedCoM.applyMatrix4(relRotMatrix);
+      let surfaceInfluence = surf.findForceandMoment(transformedVelmps,Plane.ASLAIRDENSKGPERM3,transformedRotation,transformedCoM);
+      //let surfaceInfluence = surf.findForceandMoment(transformedVelmps,Plane.ASLAIRDENSKGPERM3,transformedRotation,this.coMm);
       allInfluences = allInfluences.sumWith(surfaceInfluence);
     }
     for (const body of this.aeroBodies) {
